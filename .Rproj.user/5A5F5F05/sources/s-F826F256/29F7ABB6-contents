@@ -1,0 +1,167 @@
+#Intro R first lesson as of June 16th
+3+5
+#Just saved two data files. one 2x2 of mouse gene with countFromRNASeq. The other is metadata. Info about the data above. Each row is a sample and each column is info about sample. Hmm row names here are the column names in data file. 
+
+baseDir <- getwd() #very cool I can save directory path to a variable. much easy
+dataDir <- file.path(baseDir, "data") #if i had a data folder in my directory this would give me path from my baseDir to my specific folder
+#option - will give me <- . wooooo. also since when did option + give ≠
+
+#numeric is a diff data type from integer. denote integer with L see below
+5L 
+#character ~ String and ther e is a complex data type. so 1+4i basically
+#raw exists too
+pi  #variable that has pi woooo
+
+#Data Structure hype train!
+
+#Vector most common. Collection of values. MUST BE SAME DATA TYPE. start at 1 not 0 *cries in proper syntax*
+#if you vector where eleemnt are "A" and 9 it will convert 9 into "9"
+
+glengths <- c(4.6, 3000, 5000) #example vector of genome lengths, c is combine function
+species <- c("ecoli", "people who space", "people who tab")
+combinedData <- c(glengths, species)
+head(combinedData) #converted nums to characters
+
+#------------------------------------------------------------------#
+#Factor data structure wooo
+
+#factor is special vector that stores categorical data. each category is a factor level. factors built on top of integer vectors such that each level is assigned an integer value. value-label pairs. Seems to be a map to me abit
+
+expression <- c("low", "high", "medium", "high", "low", "medium", "high")
+expression <- factor(expression) #create factor
+#assign label an integer alphabetically
+samplegroup <- c("CTL", "CTL", "CTL", "KO", "KO", "KO", "OE", "OE", "OE")
+samplegroup <- factor(samplegroup)
+#not sure what use case is for this. maybe ask at meeting?
+
+#------------------------------------------------------------------#
+#Matrix is collection of vectors of SAME LENGTH AND DATATYPE
+#use case is math machinery of stats. used as a checkpoint in algorithsm. like if matrix() returns error cuz not all same datatype
+#------------------------------------------------------------------#
+#Data Frame. used for most tabular data. for stats and plotting. my likely major driver. data.frame is proper structre term. Collection of vectors of same length and each vector is a column. But can be diff data type
+
+df <- data.frame(species, glengths) # behavrior turns char vectors into factors
+df #species got converted to factors dang
+
+#------------------------------------------------------------------#
+#list. hold any number of any type of other data structures
+#list()
+list1 <- list(species, df, glengths)
+list1
+
+
+#------------------------------------------------------------------#
+#------------------------------------------------------------------#
+#FUNCTIONS
+
+#usage: function_name(input) #arguments can be any object or can be specifications
+glenths <- c(glengths, 90) #takes existing vector and adds to end. can do start if you swap positioning
+sqrt(glengths)
+round(pi)
+?round #how to get help on a function. ceiling, floor exist too!
+args(round) #lists out the arguments of the function 
+example("round") #ooo kinda like executing a doc test for function
+round(pi, digits = 4)
+round(pi, 3) #as long as you provide args in order don't need to name em. dont do it tho
+
+#------------------------------------------------------------------#
+#User defined functions
+
+summer <- function(argument1, argument2){
+    return (argument1 + argument2) #retunrn is a function heads up
+}
+summer(5, 1)
+
+#------------------------------------------------------------------#
+#------------------------------------------------------------------#
+#packages are huge R collections of functionas and adata
+#libraries are the directories in R where packages are stored
+#sessionInfo() gives currently loaded libraries 
+#library() to load in one.
+#CRAN or Bioconductor repositories do install.packages("package_name")
+
+#to locally install packages do this. 
+#install.packages("~/Downloads/ggplot2_1.0.1.tar.gz", type = "source", repose = NULL) 
+library(ggplot2) #install package once, load library everytime we in a new R Studio environment
+install.packages("tidyverse")
+#cool thing where you can save a data structure to a file like this save(nameofData, file = "location/fileName/.RData) 
+#can be loaded and read only by some_data <- load(file = "path")
+
+#------------------------------------------------------------------##------------------------------------------------------------------#
+#Time to read data 
+#read.csv() for usual csv file
+#read_tsv() for tab sep. func in tidyverse
+#read.table() for text files. lets you set what delimiter is between data points. csv is comma specific so you could make it like \n if oyu wanted
+#look up rest you sheep as needed
+
+?read.csv
+
+metadata <- read.csv(file = "mouse_exp_design.csv", stringsAsFactors = FALSE)
+metadata
+str(metadata) #lists type of each so like can figure out ifcolumn in chr or factor type
+class(metadata) #what is the the class yo. its a dataframe
+summary(metadata)
+dim(metadata) #returns dimensions of data set
+nrow(metadata) #number of rows. guess the column equivalent
+rownames(metadata) #names...
+
+#vectors again
+age <- c(15, 22, 45, 52, 73, 81)
+age[5] #gives 5th element. start from 1
+age[-5] #every element except the fifth vector
+age[c(3,5,6)] #must pass it a vector of index values ffs
+age[1:4] #continuous values
+age[4:1] #negative still a thing too
+age[5:1]
+
+age > 50 #if each element in age is greater than 50. prints each one
+#returned a vector
+age>50 | age<18 
+age
+age[age>50 | age<18]
+which(age > 50 | age < 18) #gives indexes of trues
+age[which(age > 50 | age < 18)] #nested tho i dont see hwy not just do the boolean directly. why give indexes for boolean
+
+#back to factor
+expression[expression == "high"]
+expression[expression != "KO"]
+#maybe relevel expression no?
+expression <- factor(expression, levels = c("low", "medium", "high"))
+str(expression) #good example of needing to relevel is make base the control group in RNA seq
+
+
+#dataframe
+metadata[1,1] #access that coordinate of the dataframe. first row first column
+metadata[1] #just shows first row.column pair not as specific
+metadata[,1] #just shows first column i think
+metadata[1,] #just shows the row first
+#can just use column names instead of index since hard to remember
+metadata[1:3, "celltype"]
+metadata$genotype[1:5] #if ya know the names dolla sign too
+metadata[,c("genotype","celltype")]
+metadata[metadata$celltype == "typeA",] #could do which too
+sub_meta <- metadata[which(metadata$replicate > 1),]
+sub_meta #got a dataframe where replicate numbers are above 1
+
+#lists
+
+list1[[2]] #need double brakcet notation to get specific component of a list
+class(list1[[2]]) #indeed is a data frame woooo
+list1[[1]] 
+list1[[1]][1] #first part returns the vector stored at index 1 and then you acess what its first vector index is
+#can do single bracket notation and use same indexing operators BUT it returns it as list data type not original!
+
+random <- list(metadata, age, list1, samplegroup, glengths)
+random[[4]]
+random[[1]]$celltype[(length(random[[1]]$celltype) - 5):length(random[[1]]$celltype)]
+names(list1)
+names(list1) <- c("species", "df", "number") #adding names to components in a list
+names(list1)
+list1[[1]]
+list1[["species"]] #names now!
+list1$species
+write.csv(sub_meta, file = "subset_meta.csv") #dataframe
+write(glengths, file = "genome_lengths.txt", ncolumns = 1)#vector
+
+
+
